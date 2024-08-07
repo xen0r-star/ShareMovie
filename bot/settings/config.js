@@ -1,6 +1,5 @@
 import { Colors } from "discord.js";
-import dotenv from 'dotenv';
-dotenv.config();
+import 'dotenv/config';
 
 const settings = {
   TOKEN: process.env.TOKEN,
@@ -12,7 +11,7 @@ const settings = {
   },
   embed: {
     color: Colors.LightGrey,
-    wrongColor: Colors.Red,
+    warning: Colors.Red,
   },
   emoji: {
     success: "✅",

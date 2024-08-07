@@ -56,7 +56,8 @@ client.on("interactionCreate", async (interaction) => {
 
     await client.sendEmbed(
       interaction,
-      "An error occurred while processing your command. Please try again later."
+      "An error occurred while processing your command. Please try again later.",
+      settings.embed.warning
     );
   }
 });

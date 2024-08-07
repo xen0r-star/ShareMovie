@@ -11,9 +11,14 @@
   "license": "MIT",
   "dependencies": {
     "discord.js": "^14.15.3",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "firebase-admin": "^12.3.0",
+    "uuid": "^10.0.0"
   },
   "engines": {
     "node": ">=16"
+  },
+  "_moduleAliases": {
+    "@settings": "./settings"
   }
 }

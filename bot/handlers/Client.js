@@ -63,14 +63,15 @@ export class Bot extends Client {
    * @param {boolean} [ephemeral=false] - Whether the message should be ephemeral.
    * @returns {Promise<Message | InteractionResponse>} The sent message or interaction response.
    */
-  async sendEmbed(interaction, data, ephemeral = false) {
+  async sendEmbed(interaction, data, color = this.config.embed.color, ephemeral = false) {
     return this.send(interaction, {
       embeds: [
         new EmbedBuilder()
-          .setColor(this.config.embed.color)
+          .setColor(color)
           .setDescription(`${data.substring(0, 3000)}`),
       ],
       ephemeral: ephemeral,
+      fetchReply: true
     });
   }
 

@@ -38,7 +38,7 @@ function App() {
             <input type="text" className="h-14 bg-gray-800 rounded p-3 w-full text-left text-2xl text-white uppercase font-extrabold" maxLength={25} placeholder="Code"></input>
             <button className="h-14 opacity-90 rounded-2xl p-3 w-full bg-red-700 bg-opacity-10 border-red-700 border-4 border-solid text-red-700 leading-none text-xl text-center font-black uppercase">{homeButtonRed}</button>
           </div>
-          <button onClick={loginType} className="relative h-14 mt-14 opacity-90 rounded-2xl p-3 w-full bg-gray-500 bg-opacity-10 border-gray-500 border-4 border-solid text-gray-500 leading-none text-xl font-black uppercase">{homebuttonGray}</button>
+          <button onClick={loginType} className="relative h-14 opacity-90 p-3 w-full text-gray-500 leading-none text-xl font-bold uppercase">{homebuttonGray}</button>
         </div>
       </div>
     </>

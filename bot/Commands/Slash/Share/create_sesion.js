@@ -2,6 +2,7 @@ import { ApplicationCommandType, Colors, EmbedBuilder } from "discord.js";
 import { v4 as uuidv4 } from 'uuid';
 
 import { db } from '../../../settings/firebaseConfig.js'
+import settings from "../../../settings/config.js"
 
 /**
  * @type {import("../../../index").Scommand}
@@ -9,7 +10,7 @@ import { db } from '../../../settings/firebaseConfig.js'
 export default {
     name: "create_session",
     description: "Creating a Session for the Server",
-    userPermissions: ["SendMessages"],
+    userPermissions: ["SendMessages", "ManageEvents"],
     botPermissions: ["SendMessages", "EmbedLinks"],
     category: "Share",
     type: ApplicationCommandType.ChatInput,
@@ -25,10 +26,10 @@ export default {
             return steps.join('\n');
         }
 
-        async function embedsEdit(color = Colors.LightGreys) {
+        async function embedsEdit(color = settings.embed.color) {
             await message.edit({embeds: [new EmbedBuilder()
                 .setDescription(formatSteps(steps))
-                .setTitle(`server session configuration ${interaction.guild.name}`)
+                .setTitle(`Server session configuration ${interaction.guild.name}`)
                 .setThumbnail(interaction.guild.iconURL({ size: 2048, format: 'png' }))
                 .setFooter({ text: client.user.tag })
                 .setTimestamp()
@@ -38,11 +39,11 @@ export default {
         const message = await interaction.reply({ embeds: 
             [new EmbedBuilder()
                 .setDescription(formatSteps(steps))
-                .setTitle(`server session configuration ${interaction.guild.name}`)
+                .setTitle(`Server session configuration ${interaction.guild.name}`)
                 .setThumbnail(interaction.guild.iconURL({ size: 2048, format: 'png' }))
                 .setFooter({ text: client.user.tag })
                 .setTimestamp()
-                .setColor(Colors.LightGrey)
+                .setColor(settings.embed.color)
             ],
             fetchReply: true
         });
@@ -64,7 +65,7 @@ export default {
             uuid = serverExistsData.id_session;
 
             steps[0] = "✅ Server already registered";
-            embedsEdit(Colors.LightGrey);
+            embedsEdit();
         } else {
             uuid = uuidv4();
 
@@ -75,7 +76,7 @@ export default {
             });
 
             steps[0] = "✅ Server register";
-            embedsEdit(Colors.LightGrey);
+            embedsEdit();
         }
 
 
@@ -100,7 +101,7 @@ export default {
             }
 
             steps[1] = "✅ Session already created";
-            embedsEdit(Colors.LightGrey);
+            embedsEdit();
         } else {
             const documentRef = db.collection('Session').doc(uuid);
             await documentRef.set({
@@ -109,7 +110,7 @@ export default {
             });
 
             steps[1] = "✅ Session Created";
-            embedsEdit(Colors.LightGrey);
+            embedsEdit();
         }
         
 
@@ -125,10 +126,10 @@ export default {
             });
 
             steps[2] = "✅ Administrator code send as DM";
-            embedsEdit(Colors.DarkGreen);
+            embedsEdit(settings.embed.correct);
         } catch (error) {
             steps[2] = "❌ Unable to send you DM";
-            embedsEdit(Colors.DarkGreen);
+            embedsEdit(settings.embed.warning);
         }
     },
 };

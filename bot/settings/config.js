@@ -11,7 +11,8 @@ const settings = {
   },
   embed: {
     color: Colors.LightGrey,
-    warning: Colors.Red,
+    correct: Colors.DarkGreen,
+    warning: Colors.DarkRed,
   },
   emoji: {
     success: "✅",

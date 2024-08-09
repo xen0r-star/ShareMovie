@@ -61,7 +61,7 @@ export default {
         });
 
         let uuid = "";
-        if (serverExists >= 1) {
+        if (serverExists >= 1 && serverExistsData.id_session) {
             uuid = serverExistsData.id_session;
 
             steps[0] = "✅ Server already registered";
@@ -78,7 +78,7 @@ export default {
             steps[0] = "✅ Server register";
             embedsEdit();
         }
-
+        
 
 
         let sessionExists = 0;

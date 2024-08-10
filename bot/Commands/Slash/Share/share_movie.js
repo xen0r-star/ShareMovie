@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ApplicationCommandType, ButtonBuilder, ButtonStyle, EmbedBuilder, StringSelectMenuBuilder } from "discord.js";
+import { ActionRowBuilder, ApplicationCommandType, ButtonBuilder, ButtonStyle, EmbedBuilder, InteractionType, ModalBuilder, StringSelectMenuBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 import moment from 'moment';
 
 import settings from "../../../settings/config.js"
@@ -24,12 +24,15 @@ export default {
                 ExistsData = doc.data();
                 if (ExistsData.id_session && ExistsData.id_session.trim() !== "") {
                     Exists += 1;
+                    return;
                 }
             }
         });
 
         if (Exists >= 1) {
             const dataFields = ["No", "undefined", "undefined", "No", "undefined"];
+            let timeScheduledEvent = [];
+            let channelScheduledEvent = undefined;
         
             const homeComponentsMenu = new ActionRowBuilder()
                 .addComponents(
@@ -200,6 +203,7 @@ export default {
                                 const embed = homeEmbed.embeds[0];
                                 const embedBuilder = EmbedBuilder.from(embed);
                                 dataFields[4] = `<#${channel.id}>`;
+                                channelScheduledEvent = channel.id;
                                 embedBuilder.spliceFields(0, 5, 
                                     { name: 'Event', value: dataFields[0], inline: true}, 
                                     { name: 'Start', value: dataFields[1], inline: true},
@@ -300,6 +304,8 @@ export default {
                         }
                     } else if (interaction.customId === 'selectEventTimeStart') {
                         dataFields[1] = `\`In ${moment().subtract(interaction.values[0], 'seconds').fromNow(true)}\``;
+                        timeScheduledEvent[0] = interaction.values[0];
+
                         await interaction.update({
                             embeds: [new EmbedBuilder()
                                 .setTitle('Configuring events')
@@ -393,6 +399,7 @@ export default {
                         });
                     } else if (interaction.customId === 'selectEventTimeEnd') {
                         dataFields[2] = `\`${moment().subtract(interaction.values[0], 'seconds').fromNow(true)}\``;
+                        timeScheduledEvent[1] = interaction.values[0];
 
                         const embed = homeEmbed.embeds[0];
                         const embedBuilder = EmbedBuilder.from(embed);
@@ -519,7 +526,101 @@ export default {
                         );
                         await homeEmbed.edit({ embeds: [embedBuilder], components: [homeComponentsMenu, dataFields[4] === 'undefined' ? homeComponentsButtonTrue : homeComponentsButtonFalse] });
                     } else if (interaction.customId === 'validate') {
-                        console.log("----------------------------------------")
+                        const modal = new ModalBuilder()
+                            .setCustomId('configShareMovie')
+                            .setTitle('Enter Administrator Code');
+                
+                        modal.addComponents(new ActionRowBuilder().addComponents(new TextInputBuilder()
+                            .setCustomId('adminCode')
+                            .setLabel("Please enter your administrator code below")
+                            .setRequired(true)
+                            .setPlaceholder("XXXXXXXX")
+                            .setMinLength(8)
+                            .setMaxLength(8)
+                            .setStyle(TextInputStyle.Short)
+                        ));
+                        await interaction.showModal(modal);
+                    }
+                } else if (interaction.type === InteractionType.ModalSubmit && interaction.customId === 'configShareMovie') {
+                    const adminCodeUser = interaction.fields.getTextInputValue('adminCode');
+                    let admincodeServer = undefined;
+            
+                    const snapshot = await db.collection('Session').get();
+                    snapshot.forEach((doc) => {
+                        if (doc.id == ExistsData.id_session) {
+                            admincodeServer = doc.data().adminCode;
+                            return;
+                        }
+                    });
+
+                    if (admincodeServer === adminCodeUser) {
+                        await interaction.reply({ embeds: [new EmbedBuilder()
+                            .setTitle('Administrator Code Verified')
+                            .setDescription('The administrator code you entered is correct. Creating sharing...')
+                            .setColor(settings.embed.correct)
+                        ], ephemeral: true });
+
+                        const codeShare = Array(2).fill().map(() => [...Array(4)].map(() => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.random() * 36 | 0]).join('')).join('-')
+                        let componentsEmbed = [];
+                        if (dataFields[0] === 'Yes') {    
+                            const scheduledEvent = await interaction.guild.scheduledEvents.create({
+                                name: '🎬 Live Cinema Night!',
+                                description: `### Join us for a fun watch party! 🎉\n\nJoin us on **${moment(new Date(Date.now() + timeScheduledEvent[0] * 1000)).format('MMMM D, YYYY [**at**] h:mm A')}** to watch a film together! Log on to [Share Movie](https://share-movie.web.app/) with the code **${codeShare}** and enjoy this unique moment with your friends and the whole server.\n\nDon't miss this opportunity to share an unforgettable movie night! 🍿🎉`,
+                                scheduledStartTime: new Date(Date.now() + timeScheduledEvent[0] * 1000).toISOString(),
+                                scheduledEndTime: new Date(Date.now() + timeScheduledEvent[0] * 1000 + timeScheduledEvent[1] * 1000).toISOString(),
+                                privacyLevel: 2,
+                                entityType: 3,
+                                entityMetadata: {
+                                    location: 'https://share-movie.web.app/',
+                                },
+                            });
+                            
+                            componentsEmbed = [new ActionRowBuilder()
+                                .addComponents(
+                                    new ButtonBuilder()
+                                        .setLabel('Login page')
+                                        .setStyle(ButtonStyle.Link)
+                                        .setURL("https://share-movie.web.app/"),
+                                    new ButtonBuilder()
+                                        .setLabel('Event link')
+                                        .setStyle(ButtonStyle.Link)
+                                        .setURL(scheduledEvent.url),
+                                )
+                            ]
+                        } else {
+                            componentsEmbed = [new ActionRowBuilder()
+                                .addComponents(
+                                    new ButtonBuilder()
+                                        .setLabel('Login page')
+                                        .setStyle(ButtonStyle.Link)
+                                        .setURL("https://share-movie.web.app/")
+                                )
+                            ]
+                        }
+                        
+                        let messageMention = dataFields[3] !== 'No' ? `${dataFields[3]}` : ''
+                        const channel = client.channels.cache.get(channelScheduledEvent);
+                        await channel.send({ 
+                            content: messageMention,
+                            embeds: [new EmbedBuilder()
+                                .setDescription("Watch the film live with all the members of the server and chat at the same time.")
+                                .setTitle(`Entry code for ${interaction.guild.name} movie`)
+                                .setThumbnail(interaction.guild.iconURL({ size: 2048, format: 'png' }))
+                                .setFooter({ text: client.user.tag })
+                                .addFields({ name: '**Login Code**', value: codeShare })
+                                .setTimestamp()
+                                .setColor(settings.embed.color)
+                            ],
+                            components: componentsEmbed,
+                            ephemeral: true
+                        });
+
+                    } else {
+                        await interaction.reply({ embeds: [new EmbedBuilder()
+                            .setTitle('Invalid Administrator Code')
+                            .setDescription('The administrator code you entered is incorrect. Please double-check your code and try again. If you need to retrieve the correct administrator code, you can use the command </admin_config_code:1271789881709953069>.')
+                            .setColor(settings.embed.warning)
+                        ], ephemeral: true });
                     }
                 }
             });

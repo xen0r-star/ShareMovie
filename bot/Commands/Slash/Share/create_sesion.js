@@ -57,6 +57,7 @@ export default {
             if (doc.id == interaction.guild.id.toString()) {
                 serverExists += 1;
                 serverExistsData = doc.data();
+                return;
             }
         });
 
@@ -88,6 +89,7 @@ export default {
             if (doc.id == uuid) {
                 sessionExists += 1;
                 sessionExistsData = doc.data();
+                return;
             }
         });
         

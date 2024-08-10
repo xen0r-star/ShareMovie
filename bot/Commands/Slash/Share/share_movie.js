@@ -31,7 +31,7 @@ export default {
         if (Exists >= 1) {
             const dataFields = ["No", "undefined", "undefined", "No", "undefined"];
         
-            const homeComponents = [new ActionRowBuilder()
+            const homeComponentsMenu = new ActionRowBuilder()
                 .addComponents(
                     new StringSelectMenuBuilder()
                         .setCustomId('select')
@@ -63,16 +63,26 @@ export default {
                                 value: 'exit_settings',
                             }
                         ])
-                ),
-                new ActionRowBuilder()
-                    .addComponents(
-                        new ButtonBuilder()
-                            .setDisabled(true)
-                            .setCustomId('validate')
-                            .setLabel('Validate')
-                            .setStyle(ButtonStyle.Success)
-                    )
-            ];
+                );
+
+            const homeComponentsButtonFalse = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setDisabled(false)
+                        .setCustomId('validate')
+                        .setLabel('Validate')
+                        .setStyle(ButtonStyle.Success)
+                );
+
+            const homeComponentsButtonTrue = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setDisabled(true)
+                        .setCustomId('validate')
+                        .setLabel('Validate')
+                        .setStyle(ButtonStyle.Success)
+                );
+            
 
             const homeEmbed = await interaction.reply({
                 embeds: [new EmbedBuilder()
@@ -90,14 +100,14 @@ export default {
                     .setFooter({ text: "Choose a configuration option below:", iconURL: client.user.iconURL })
                     .setTimestamp()
                 ],
-                components: homeComponents,
+                components: [homeComponentsMenu, dataFields[4] === 'undefined' ? homeComponentsButtonTrue : homeComponentsButtonFalse],
                 fetchReply: true,
             });
 
 
 
             client.on('interactionCreate', async (interaction) => {
-                if (interaction.isSelectMenu()) {
+                if (interaction.isStringSelectMenu()) {
                     if (interaction.customId === 'select') {
                         const selectedValue = interaction.values[0];
                         if (selectedValue === 'event_settings') {
@@ -168,7 +178,14 @@ export default {
                                 if (m.content.toLowerCase() === 'cancel') {
                                     const embed = homeEmbed.embeds[0];
                                     const embedBuilder = EmbedBuilder.from(embed);
-                                    await homeEmbed.edit({ embeds: [embedBuilder], components: homeComponents });
+                                    embedBuilder.spliceFields(0, 5, 
+                                        { name: 'Event', value: dataFields[0], inline: true}, 
+                                        { name: 'Start', value: dataFields[1], inline: true},
+                                        { name: 'Last', value: dataFields[2], inline: true},
+                                        { name: 'Mention', value: dataFields[3], inline: true},
+                                        { name: 'Channel', value: dataFields[4], inline: true}
+                                    );
+                                    await homeEmbed.edit({ embeds: [embedBuilder], components: [homeComponentsMenu, dataFields[4] === 'undefined' ? homeComponentsButtonTrue : homeComponentsButtonFalse] });
                                     collector.stop();
                                     return;
                                 }
@@ -190,50 +207,7 @@ export default {
                                     { name: 'Mention', value: dataFields[3], inline: true},
                                     { name: 'Channel', value: dataFields[4], inline: true}
                                 );
-                                await homeEmbed.edit({ 
-                                    embeds: [embedBuilder], 
-                                    components: [new ActionRowBuilder()
-                                    .addComponents(
-                                        new StringSelectMenuBuilder()
-                                            .setCustomId('select')
-                                            .setPlaceholder('Select an option')
-                                            .addOptions([
-                                                {
-                                                    label: 'Event',
-                                                    description: 'Enable or disable event creation',
-                                                    value: 'event_settings',
-                                                },
-                                                {
-                                                    label: 'Channel',
-                                                    description: 'Channel in which it will be send the message of connections',
-                                                    value: 'channel_settings',
-                                                },
-                                                {
-                                                    label: 'Mention',
-                                                    description: 'Mention a role when sharing is created',
-                                                    value: 'mention_settings'
-                                                },
-                                                {
-                                                    label: 'Preview message',
-                                                    description: 'Preview of connection message',
-                                                    value: 'preview_settings',
-                                                },
-                                                {
-                                                    label: 'Exit',
-                                                    description: 'Exit the configurator',
-                                                    value: 'exit_settings',
-                                                }
-                                            ])
-                                    ),
-                                    new ActionRowBuilder()
-                                        .addComponents(
-                                            new ButtonBuilder()
-                                                .setDisabled(false)
-                                                .setCustomId('validate')
-                                                .setLabel('Validate')
-                                                .setStyle(ButtonStyle.Success)
-                                        )]
-                                });
+                                await homeEmbed.edit({embeds: [embedBuilder], components: [homeComponentsMenu, dataFields[4] === 'undefined' ? homeComponentsButtonTrue : homeComponentsButtonFalse]});
                                 collector.stop();
                             });
 
@@ -241,7 +215,14 @@ export default {
                                 if (reason === 'time') {
                                     const embed = homeEmbed.embeds[0];
                                     const embedBuilder = EmbedBuilder.from(embed);
-                                    await homeEmbed.edit({ embeds: [embedBuilder], components: homeComponents });
+                                    embedBuilder.spliceFields(0, 5, 
+                                        { name: 'Event', value: dataFields[0], inline: true}, 
+                                        { name: 'Start', value: dataFields[1], inline: true},
+                                        { name: 'Last', value: dataFields[2], inline: true},
+                                        { name: 'Mention', value: dataFields[3], inline: true},
+                                        { name: 'Channel', value: dataFields[4], inline: true}
+                                    );
+                                    await homeEmbed.edit({ embeds: [embedBuilder], components: [homeComponentsMenu, dataFields[4] === 'undefined' ? homeComponentsButtonTrue : homeComponentsButtonFalse] });
                                 }
                             });
                         } else if (selectedValue === 'mention_settings') {
@@ -267,7 +248,14 @@ export default {
                                 if (m.content.toLowerCase() === 'cancel') {
                                     const embed = homeEmbed.embeds[0];
                                     const embedBuilder = EmbedBuilder.from(embed);
-                                    await homeEmbed.edit({ embeds: [embedBuilder], components: homeComponents });
+                                    embedBuilder.spliceFields(0, 5, 
+                                        { name: 'Event', value: dataFields[0], inline: true}, 
+                                        { name: 'Start', value: dataFields[1], inline: true},
+                                        { name: 'Last', value: dataFields[2], inline: true},
+                                        { name: 'Mention', value: dataFields[3], inline: true},
+                                        { name: 'Channel', value: dataFields[4], inline: true}
+                                    );
+                                    await homeEmbed.edit({ embeds: [embedBuilder], components: [homeComponentsMenu, dataFields[4] === 'undefined' ? homeComponentsButtonTrue : homeComponentsButtonFalse] });
                                     collector.stop();
                                     return;
                                 }
@@ -289,7 +277,7 @@ export default {
                                     { name: 'Mention', value: dataFields[3], inline: true},
                                     { name: 'Channel', value: dataFields[4], inline: true}
                                 );
-                                await homeEmbed.edit({ embeds: [embedBuilder], components: homeComponents });
+                                await homeEmbed.edit({ embeds: [embedBuilder], components: [homeComponentsMenu, dataFields[4] === 'undefined' ? homeComponentsButtonTrue : homeComponentsButtonFalse] });
                                 collector.stop();
                             });
 
@@ -297,7 +285,14 @@ export default {
                                 if (reason === 'time') {
                                     const embed = homeEmbed.embeds[0];
                                     const embedBuilder = EmbedBuilder.from(embed);
-                                    await homeEmbed.edit({ embeds: [embedBuilder], components: homeComponents });
+                                    embedBuilder.spliceFields(0, 5, 
+                                        { name: 'Event', value: dataFields[0], inline: true}, 
+                                        { name: 'Start', value: dataFields[1], inline: true},
+                                        { name: 'Last', value: dataFields[2], inline: true},
+                                        { name: 'Mention', value: dataFields[3], inline: true},
+                                        { name: 'Channel', value: dataFields[4], inline: true}
+                                    );
+                                    await homeEmbed.edit({ embeds: [embedBuilder], components: [homeComponentsMenu, dataFields[4] === 'undefined' ? homeComponentsButtonTrue : homeComponentsButtonFalse] });
                                 }
                             });
                         } else if (selectedValue === 'exit_settings') {
@@ -408,7 +403,8 @@ export default {
                             { name: 'Mention', value: dataFields[3], inline: true},
                             { name: 'Channel', value: dataFields[4], inline: true}
                         );
-                        await homeEmbed.edit({ embeds: [embedBuilder], components: homeComponents });
+                        await homeEmbed.edit({ embeds: [embedBuilder], components: [homeComponentsMenu, dataFields[4] === 'undefined' ? homeComponentsButtonTrue : homeComponentsButtonFalse] });
+                        await interaction.deferUpdate();
                     }
                 } else if (interaction.isButton()) {
                     if (interaction.customId === 'yes') {
@@ -521,7 +517,9 @@ export default {
                             { name: 'Mention', value: dataFields[3], inline: true},
                             { name: 'Channel', value: dataFields[4], inline: true}
                         );
-                        await homeEmbed.edit({ embeds: [embedBuilder], components: homeComponents });
+                        await homeEmbed.edit({ embeds: [embedBuilder], components: [homeComponentsMenu, dataFields[4] === 'undefined' ? homeComponentsButtonTrue : homeComponentsButtonFalse] });
+                    } else if (interaction.customId === 'validate') {
+                        console.log("----------------------------------------")
                     }
                 }
             });
